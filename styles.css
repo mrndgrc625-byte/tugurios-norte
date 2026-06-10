@@ -1,0 +1,2424 @@
+/* ══════════════════════════════════════════════
+   FUENTES
+   ══════════════════════════════════════════════ */
+@font-face {
+    font-family: 'Anton';
+    src: url('assets/fonts/Anton/Anton-Regular.woff2') format('woff2');
+    font-weight: 200 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+
+:root {
+    --black: #0f0f0f;
+    --white: #f4f4f4;
+    --mostaza: #f1e696;
+    --cream: #eedea2;
+    --gray: #636363;
+
+    --font-maintitle: "Swung Note";
+    --font-titles: "Anton";
+    --font-body: "Domine";
+
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.4rem;
+    --text-2xl: 3rem;
+    --text-3xl: 4.5rem;
+
+    --pad-x: clamp(1.5rem, 6vw, 8rem);
+}
+
+
+/* ══════════════════════════════════════════════
+   RESET
+   ══════════════════════════════════════════════ */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    cursor: none;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--black);
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: clamp(16px, 1.2vw, 19px);
+    line-height: 1.75;
+    overflow-x: hidden;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+}
+
+
+/* ══════════════════════════════════════════════
+   CURSOR
+   ══════════════════════════════════════════════ */
+.cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 14px;
+    height: 14px;
+    background: var(--cream);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    transition: width 0.18s ease, height 0.18s ease;
+    will-change: transform;
+}
+
+.cursor.hover {
+    width: 36px;
+    height: 36px;
+    mix-blend-mode: difference;
+}
+
+
+/* ══════════════════════════════════════════════
+   GRAIN (body)
+   ══════════════════════════════════════════════ */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+    opacity: 0.15;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 200px 200px;
+}
+
+
+/* ══════════════════════════════════════════════
+   NAV
+   ══════════════════════════════════════════════ */
+nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 9000;
+    pointer-events: none;
+}
+
+.menu-toggle {
+    position: fixed;
+    top: 2rem;
+    right: var(--pad-x);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: none;
+    background: none;
+    pointer-events: auto;
+    z-index: 9500;
+    cursor: none;
+    padding: 0;
+}
+
+
+.menu-toggle-wrap {
+    position: relative;
+    width: 44px;
+    height: 44px;
+}
+
+.menu-toggle-ring {
+    display: block;
+    width: 44px;
+    height: 44px;
+}
+
+.menu-toggle-ring circle {
+    fill: none;
+    stroke: var(--cream);
+    stroke-width: 1.5;
+    transform-origin: center;
+    transition: stroke 0.25s ease, filter 0.25s ease;
+}
+
+.menu-toggle:hover .menu-toggle-ring circle {
+    stroke: var(--mostaza);
+    filter: drop-shadow(0 0 6px rgba(241, 230, 150, 0.7)) drop-shadow(0 0 14px rgba(239, 217, 49, 0.35));
+}
+
+.menu-x {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 14px;
+    height: 14px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.menu-x::before,
+.menu-x::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1.5px;
+    background: #0f0f0f;
+    transform-origin: center;
+}
+
+.menu-x::before { transform: translateY(-50%) rotate(45deg); }
+.menu-x::after  { transform: translateY(-50%) rotate(-45deg); }
+
+/* Mega menu */
+.mega-menu {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 4rem var(--pad-x) 6rem;
+    z-index: 9400;
+    pointer-events: none;
+    visibility: hidden;
+    overflow: hidden;
+}
+
+
+.menu-bg-circle {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+
+.menu-content {
+    position: relative;
+    z-index: 1;
+}
+
+.menu-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-list li {
+    width: 100%;
+    overflow: hidden;
+}
+
+.menu-list a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 1.4rem 0;
+    text-decoration: none;
+    cursor: none;
+    font-family: var(--font-titles);
+    font-size: clamp(1.8rem, 4vw, 4rem);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--black);
+}
+
+.link-scramble {
+    display: flex;
+    align-items: baseline;
+    pointer-events: none;
+    will-change: font-size;
+}
+
+.char {
+    display: inline-block;
+    font-size: 1em;
+    line-height: 1;
+    transform-origin: bottom center;
+    will-change: font-size;
+}
+
+
+/* ══════════════════════════════════════════════
+   HEADER / HERO
+   ══════════════════════════════════════════════ */
+header {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background-color: var(--black);
+}
+
+.header-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    background: url('assets/imgs/arco-tijuana.png') center bottom / cover no-repeat;
+    transform-origin: center center;
+    will-change: transform;
+}
+
+header::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(to bottom,
+        rgba(15, 15, 15, 0.15) 0%,
+        rgba(15, 15, 15, 0.30) 40%,
+        rgba(15, 15, 15, 0.82) 75%,
+        rgba(15, 15, 15, 0.98) 100%);
+}
+
+header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0.20;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 200px 200px;
+}
+
+.header-content {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    padding: 0 4vw 8vh;
+}
+
+.header-content svg {
+    transform-origin: center center;
+    will-change: transform, opacity;
+}
+
+
+/* ══════════════════════════════════════════════
+   INTRO QUOTE
+   ══════════════════════════════════════════════ */
+.intro-quote-section {
+    height: 400vh;
+    position: relative;
+}
+
+.intro-quote-sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.intro-quote-border {
+    position: relative;
+    width: 92%;
+    max-width: 500px;
+    border: 5px solid var(--mostaza);
+    padding: 6rem 5rem;
+}
+
+.intro-quote-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url('assets/textures/textura-01.png') center / cover no-repeat;
+    opacity: 0.25;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+}
+
+.intro-blockquote {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15em;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: clamp(1rem, 2vw, 4rem);
+    color: var(--gray);
+    line-height: 1.2;
+}
+
+.iq-line,
+.iq-line--final {
+    display: block;
+    opacity: 0;
+    will-change: opacity;
+}
+
+
+/* ══════════════════════════════════════════════
+   SCROLL REVEAL
+   ══════════════════════════════════════════════ */
+.sr {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.85s ease, transform 0.85s ease;
+}
+
+.sr.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.cap-scroll-space {
+    display: block;
+    width: 100%;
+}
+
+/* ══════════════════════════════════════════════
+   CAP SECTIONS — BASE GLOBAL
+   ══════════════════════════════════════════════ */
+
+.cap-pin-wrap {
+    position: relative;
+}
+
+.cap-section {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    width: 100%;
+    overflow: hidden;
+}
+
+.cap-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.cap-col--left,
+.cap-col--right {
+    flex: 1;
+    min-width: 0;
+}
+
+.cap-col--title {
+    flex: 0 0 auto;
+    width: clamp(80px, 10vw, 140px);
+}
+
+/* ── Sticky base ──────────────────────────── */
+.cap-sticky {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+/* Título vertical */
+.cap-sticky--title {
+    padding: 2rem 0;
+    writing-mode: vertical-rl;
+    flex-direction: column;
+    align-items: center;
+}
+
+.cap-sticky--title .cap-title-box {
+    padding: 3rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cap-sticky--title .cap-title-box h2 {
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    font-size: clamp(3rem, 6vw, 5.5rem);
+    line-height: 1;
+    letter-spacing: 0.05em;
+    
+}
+
+/* Título horizontal en secciones --split */
+.cap-sticky--left {
+    writing-mode: horizontal-tb;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 3rem;
+    height: auto;
+    top: 3rem;
+}
+
+.cap-sticky--left .cap-title-box h2 {
+    writing-mode: horizontal-tb;
+    font-size: clamp(4rem, 8vw, 7rem);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+}
+
+/* Media sticky */
+.cap-sticky--right {
+    padding: 3rem;
+}
+
+/* ── Title box base ───────────────────────── */
+.cap-title-box {
+    position: relative;
+    background: var(--mostaza);
+    padding: 1.5rem 2.5rem;
+    align-self: flex-start;
+    margin-left: 10rem;
+}
+
+.cap-title-box h2 {
+    font-family: var(--font-titles);
+    text-transform: uppercase;
+    color: var(--black);
+}
+
+/* ── Zona de swap ─────────────────────────── */
+.cap-text {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+.cap-text--left {
+    padding: 3rem;
+}
+
+.cap-text--right {
+    padding: 3rem;
+}
+
+.cap-text-inner {
+    position: relative;
+    width: 100%;
+}
+
+/* Párrafos individuales */
+.cap-p {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0;
+    pointer-events: none;
+    font-family: var(--font-body);
+    font-size: clamp(1rem, 1.1vw, 1.2rem);
+    color: var(--white);
+    font-weight: 500;
+    line-height: 1.6;
+    will-change: opacity, transform;
+}
+
+.cap-p.is-active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ── Photo / video wrap base ──────────────── */
+.cap-photo-wrap {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+.cap-photo-wrap img,
+.cap-photo-wrap .cap-video {
+    width: 100%;
+    display: block;
+    will-change: transform, opacity;
+    transform-origin: center center;
+}
+
+.cap-photo-wrap img {
+    border: 1px solid var(--mostaza);
+}
+
+/* ── Pull quote base ──────────────────────── */
+.cap-pull {
+    position: absolute;
+    background: var(--black);
+    padding: 0.6rem 1rem;
+    max-width: 260px;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 10;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.cap-pull span {
+    display: block;
+    font-family: var(--font-titles);
+    font-size: var(--text-sm);
+    color: var(--cream);
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.cap-pull em {
+    display: block;
+    font-family: var(--font-titles);
+    font-size: var(--text-xs);
+    color: var(--mostaza);
+    margin-top: 0.2rem;
+}
+
+/* Pull default: arriba derecha (bloque 1) */
+.cap-pull:not(.cap-pull--center):not(.cap-pull--bottom-left) {
+    top: 1rem;
+    right: -2rem;
+    transform: translateX(42px);
+}
+
+.cap-photo-wrap:hover .cap-pull:not(.cap-pull--center):not(.cap-pull--bottom-left) {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Pull centro (bloque 3) */
+.cap-pull--center {
+    top: 50%;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    transform: translate(-50%, calc(-50% + 20px));
+    text-align: center;
+    max-width: 220px;
+}
+
+.cap-photo-wrap:hover .cap-pull--center {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+}
+
+/* Pull esquina inferior izquierda (bloque 4) */
+.cap-pull--bottom-left {
+    bottom: 1rem;
+    left: 1rem;
+    top: auto;
+    right: auto;
+    transform: translateX(-20px);
+}
+
+.cap-photo-wrap:hover .cap-pull--bottom-left {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* ── Fullbleed base ───────────────────────── */
+.cap-section--fullbleed {
+    position: relative;
+    width: 100%;
+    height: 100svh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.cap-fullbleed-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--pad-x);
+}
+
+.cap-p--fullbleed {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: min(700px, 70vw);
+    opacity: 0;
+    pointer-events: none;
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: clamp(1.5rem, 3vw, 2.8rem);
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--white);
+    will-change: opacity, transform;
+}
+
+.cap-p--fullbleed.is-active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Grain fullbleed */
+.cap-fullbleed-grain {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    background: url('assets/textures/textura-01.png') center / cover no-repeat;
+    will-change: opacity;
+}
+
+.cap-fullbleed-grain2 {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    background: url('assets/textures/textura-01.png') center / cover no-repeat;
+    will-change: opacity;
+}
+
+.cap-fullbleed-grain3 {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    background: url('assets/textures/textura-01.png') center / cover no-repeat;
+    will-change: opacity;
+}
+
+
+/* ══════════════════════════════════════════════
+   CAP 1 · 4 AMIGOS — variantes por bloque
+   ══════════════════════════════════════════════ */
+
+.cap-section--amigos {
+    min-height: 100svh;
+    align-items: stretch;
+}
+
+.cap-section--amigos .cap-col--left {
+    padding: 8vh 3rem;
+}
+
+.cap-p--flow {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    opacity: 1;
+    pointer-events: auto;
+    font-size: clamp(1rem, 1.1vw, 1.2rem);
+    line-height: 1.7;
+}
+
+/* Video con bleed izquierdo */
+.cap-section--amigos .cap-video.amigos {
+    width: calc(100% + 200px);
+    margin-left: -200px;
+}
+
+.cap-section--amigos-2 {
+    background: var(--black);
+}
+
+.cap-section--amigos-2 .cap-p--fullbleed {
+    font-size: clamp(2rem, 5vw, 4.5rem);
+    font-family: var(--font-body);
+    letter-spacing: -0.02em;
+    font-weight: 900;
+    color: var(--white);
+    max-width: 800px;
+}
+
+/* ── Bloques 3 y 4: swap slides ─────────────── */
+.cap-section--amigos-34 {
+    position: relative;
+    width: 100%;
+    height: 100svh;
+    overflow: hidden;
+}
+
+/* Cada slide ocupa toda la sección apilado */
+.cap-swap-slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    opacity: 0;
+    pointer-events: none;
+    will-change: opacity;
+}
+
+.cap-swap-slide.is-active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* El texto dentro del swap slide fluye normal */
+.cap-section--amigos-34 .cap-p {
+    position: relative;
+    top: auto;
+    left: auto;
+    opacity: 1;
+    pointer-events: auto;
+    font-size: clamp(1rem, 1.1vw, 1.2rem);
+    line-height: 1.7;
+}
+
+/* Estado inicial de la imagen — GSAP la anima */
+.cap-section--amigos-34 .cap-photo-wrap img {
+    transform: translateY(-40px);
+    opacity: 0;
+    will-change: transform, opacity;
+}
+
+/* ── Bloque 5: fragmentos de canciones ──────── */
+.cap-section--amigos-5 {
+    background: var(--black);
+}
+
+.cap-section--amigos-5 .cap-fullbleed-content {
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 var(--pad-x);
+}
+
+.cap-section--amigos-5 .cap-text-inner {
+    position: relative;
+    width: 100%;
+    max-width: 700px;
+    height: 40svh;
+}
+
+.cap-section--amigos-5 .cap-p--fullbleed {
+    text-align: left;
+    font-size: clamp(1.1rem, 1.6vw, 1.5rem);
+    font-weight: 500;
+    line-height: 1.7;
+    max-width: 100%;
+}
+
+
+/* ── Bloque 6: cierre sobrio ────────────────── */
+.cap-section--amigos-6 {
+    background: var(--black);
+}
+
+.cap-section--amigos-6 .cap-p--fullbleed {
+    font-size: clamp(1rem, 1.4vw, 1.3rem);
+    font-weight: 500;
+    max-width: min(800px, 70vw);
+    color: rgba(244, 244, 244, 0.75);
+    line-height: 1.8;
+
+}
+
+/* ══════════════════════════════════════════════
+   CAP 2 · LA LEYENDA NEGRA
+   ══════════════════════════════════════════════ */
+
+/* ── Intro: fullbleed video + título ───────── */
+.cap-section--leyenda-intro {
+    background: var(--black);
+}
+
+.leyenda-intro-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+.leyenda-intro-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom,
+            rgba(15, 15, 15, 0.2) 0%,
+            rgba(15, 15, 15, 0.6) 70%,
+            rgba(15, 15, 15, 0.85) 100%);
+    z-index: 1;
+}
+
+.leyenda-intro-title {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 2;
+    transform-origin: bottom right;
+    will-change: transform;
+}
+
+.cap-title-box--leyenda {
+    background: var(--black);
+    border: 1.5px solid var(--mostaza);
+}
+
+.cap-title-box--leyenda h2 {
+    color: var(--mostaza);
+    font-size: clamp(3rem, 6vw, 6rem);
+}
+
+.cap-title-box--leyenda::before {
+    color: var(--mostaza);
+}
+
+/* ── Bloque 1: tres imágenes + texto ────────── */
+.cap-section--leyenda-1 {
+    background: var(--black);
+}
+
+.leyenda-1-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem;
+    padding: 0 var(--pad-x);
+    width: 100%;
+}
+
+.leyenda-imgs-row {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-end;
+    justify-content: center;
+    width: 100%;
+    max-width: 900px;
+}
+
+.leyenda-img-item {
+    flex: 1;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    opacity: 0;
+    will-change: opacity, transform;
+}
+
+.leyenda-img-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.leyenda-texto-1 {
+    max-width: 700px;
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: clamp(0.9rem, 1vw, 1.1rem);
+    color: var(--white);
+    line-height: 1.7;
+    opacity: 0;
+    will-change: opacity, transform;
+}
+
+/* ── Bloque 2: SVG + texto overlay ──────────── */
+.cap-section--leyenda-2 {
+    background: var(--black);
+}
+
+.leyenda-2-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.leyenda-svg-wrap {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: scale(0);
+    transform-origin: center center;
+    will-change: transform;
+}
+
+.leyenda-svg-img {
+    width: min(80vw, 700px);
+    height: auto;
+    opacity: 0.35;
+}
+
+.leyenda-texto-overlay {
+    position: relative;
+    z-index: 2;
+    max-width: min(600px, 60vw);
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: clamp(1rem, 1.3vw, 1.3rem);
+    color: var(--white);
+    line-height: 1.7;
+    opacity: 0;
+    will-change: opacity;
+}
+
+/* ── Bloques 3-4-5: tres columnas ───────────── */
+.cap-section--leyenda-345 {
+    background: var(--black);
+}
+
+.leyenda-345-grid {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 0 var(--pad-x);
+    width: 100%;
+    max-width: 1200px;
+}
+
+.leyenda-col-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    opacity: 0;
+    will-change: opacity, transform;
+}
+
+.leyenda-col-texto {
+    font-family: var(--font-body);
+    font-size: clamp(0.85rem, 0.95vw, 1rem);
+    color: var(--white);
+    line-height: 1.7;
+}
+
+.leyenda-col-img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+}
+
+.leyenda-col-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ── Bloque 6: imagen bg + caja mostaza ─────── */
+.cap-section--leyenda-6 {
+    background: var(--black);
+}
+
+.leyenda-6-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.leyenda-6-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.leyenda-6-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 15, 15, 0.55);
+    z-index: 1;
+}
+
+.leyenda-6-box {
+    position: relative;
+    z-index: 2;
+    background-color: var(--mostaza);
+    padding: 3rem 3.5rem;
+    max-width: min(680px, 70vw);
+    opacity: 0;
+    will-change: opacity, transform;
+    
+}
+
+.leyenda-6-box p {
+    font-family: var(--font-body);
+    font-size: clamp(0.95rem, 1.1vw, 1.15rem);
+    color: var(--black);
+    line-height: 1.75;
+}
+
+/* ── Bloque 7: imagen mitad superior + caja negra ── */
+.cap-section--leyenda-7 {
+    background: var(--black);
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.leyenda-7-img-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.leyenda-7-img-top img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.leyenda-7-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    background: var(--black);
+    border: 1.5px solid var(--mostaza);
+    padding: 3rem 3.5rem;
+    max-width: min(680px, 70vw);
+    width: 100%;
+    opacity: 0;
+    will-change: opacity;
+}
+
+.leyenda-7-box p {
+    font-family: var(--font-body);
+    font-size: clamp(0.9rem, 1vw, 1.1rem);
+    color: var(--white);
+    line-height: 1.75;
+}
+
+.leyenda-7-box p+p {
+    margin-top: 1.25rem;
+}
+
+/* ── Bloque 8: texto con highlight Revolución ── */
+.cap-section--leyenda-8 {
+    background: var(--black);
+}
+
+.leyenda-8-texto {
+    max-width: min(700px, 70vw);
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: clamp(1rem, 1.2vw, 1.2rem);
+    color: var(--white);
+    line-height: 1.8;
+    opacity: 0;
+    will-change: opacity;
+}
+
+.leyenda-highlight {
+    background: var(--mostaza);
+    color: var(--black);
+    padding: 0 0.2em;
+    font-style: normal;
+    text-decoration: none;
+}
+
+/* ── Imagen final: se revela con scroll ─────── */
+.cap-section--leyenda-final {
+    background: var(--black);
+    overflow: hidden;
+}
+
+.leyenda-final-img {
+    position: absolute;
+    inset: 0;
+    clip-path: inset(100% 0 0 0);
+    will-change: clip-path;
+}
+
+.leyenda-final-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ══════════════════════════════════════════════
+   TRANSICIÓN GRIETA
+   ══════════════════════════════════════════════ */
+.grieta-wrap {
+    position: fixed;
+    inset: 0;
+    z-index: 8000;
+    pointer-events: none;
+    opacity: 0;
+    will-change: opacity;
+}
+
+.grieta-mitad {
+    position: absolute;
+    inset: 0;
+    background-image: url('assets/imgs/leyenda-final.jpg');
+    background-size: cover;
+    background-position: center;
+    will-change: transform, clip-path;
+}
+
+/*
+   La grieta es una línea irregular de puntos compartidos.
+   La mitad izquierda y derecha comparten EXACTAMENTE
+   los mismos puntos en x para que no haya gap.
+
+   Puntos de la grieta (en % del viewport):
+   top:     52%
+   p1:  54% 10%
+   p2:  49% 22%
+   p3:  55% 35%
+   p4:  48% 48%
+   p5:  53% 60%
+   p6:  47% 72%
+   p7:  52% 85%
+   bottom:  51%
+*/
+
+.grieta-mitad--left {
+    clip-path: polygon(0% 0%,
+            52% 0%,
+            54% 10%,
+            49% 22%,
+            55% 35%,
+            48% 48%,
+            53% 60%,
+            47% 72%,
+            52% 85%,
+            51% 100%,
+            0% 100%);
+}
+
+.grieta-mitad--right {
+    clip-path: polygon(52% 0%,
+            100% 0%,
+            100% 100%,
+            51% 100%,
+            52% 85%,
+            47% 72%,
+            53% 60%,
+            48% 48%,
+            55% 35%,
+            49% 22%,
+            54% 10%);
+}
+
+.grieta-negro {
+    position: absolute;
+    inset: 0;
+    background: var(--black);
+    opacity: 0;
+    will-change: opacity;
+}
+
+
+/* ══════════════════════════════════════════════
+   CAP 3 · DESTRUCCIÓN
+   ══════════════════════════════════════════════ */
+
+/* ── Intro: título + imagen larga ───────────── */
+.cap-section--destruccion-intro {
+    align-items: flex-start;
+    min-height: 100svh;
+}
+
+.cap-title-box--destruccion {
+    background: var(--black);
+    border: 1.5px solid var(--cream);
+    overflow: hidden;
+}
+
+.cap-title-box--destruccion h2 {
+    color: var(--cream);
+}
+
+.cap-title-box--destruccion::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url('assets/textures/textura-01.png') center / cover no-repeat;
+    opacity: 0.2;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+}
+
+.cap-vline--cream {
+    background: rgba(238, 222, 162, 0.25);
+}
+
+.destruccion-intro-text {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2rem;
+    padding: 3rem;
+    overflow: hidden;
+}
+
+.destruccion-p1,
+.destruccion-p2 {
+    font-family: var(--font-body);
+    font-size: clamp(0.85rem, 0.95vw, 1rem);
+    color: var(--white);
+    line-height: 1.7;
+    opacity: 0;
+    will-change: opacity, transform;
+}
+
+.destruccion-img-larga {
+    width: 100%;
+}
+
+.destruccion-img-larga img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+}
+
+/* ── Grain + párrafos 3 y 4 ─────────────────── */
+.cap-section--destruccion-34 {
+    background: var(--black);
+}
+
+.destruccion-grain-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: url('assets/textures/grain.png') repeat center / 300px 300px;
+    opacity: 0.12;
+    pointer-events: none;
+}
+
+.destruccion-34-inner {
+    position: relative;
+    width: 100%;
+    max-width: min(700px, 70vw);
+    height: 50svh;
+    z-index: 2;
+}
+
+.destruccion-p3 {
+    font-size: clamp(1rem, 1.3vw, 1.3rem);
+    font-weight: 500;
+}
+
+.destruccion-p4 {
+    font-size: clamp(1.8rem, 4vw, 3.5rem);
+    font-family: var(--font-body);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+/* ── Bloques 5 y 6: dos columnas ────────────── */
+.cap-section--destruccion-5,
+.cap-section--destruccion-6 {
+    background: var(--black);
+    min-height: 100svh;
+}
+
+.destruccion-col-p {
+    font-family: var(--font-body);
+    font-size: clamp(0.95rem, 1.1vw, 1.15rem);
+    color: var(--white);
+    line-height: 1.75;
+    opacity: 0;
+    will-change: opacity, transform;
+}
+
+/* ── Mapa ────────────────────────────────────── */
+.cap-section--destruccion-mapa {
+    background: var(--black);
+    overflow: hidden;
+}
+
+.destruccion-mapa-wrap {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    will-change: transform;
+    transform-origin: center center;
+}
+
+.destruccion-mapa-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0.85;
+}
+
+/* Puntos del mapa */
+.dest-punto {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    will-change: opacity;
+}
+
+.dest-punto-circulo {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--mostaza);
+    border: 2px solid var(--black);
+    position: relative;
+    z-index: 2;
+    cursor: none;
+    transition: transform 0.2s ease;
+}
+
+.dest-punto:hover .dest-punto-circulo {
+    transform: scale(1.4);
+}
+
+.dest-punto-pulso {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid var(--mostaza);
+    opacity: 0;
+    animation: pulso 2s ease-out infinite;
+}
+
+@keyframes pulso {
+    0% {
+        transform: scale(0.5);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+/* Texto del punto activo */
+.dest-mapa-texto-wrap {
+    position: absolute;
+    bottom: 3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    max-width: min(600px, 70vw);
+    background: rgba(15, 15, 15, 0.85);
+    border: 1px solid rgba(238, 222, 162, 0.3);
+    padding: 1.5rem 2rem;
+    opacity: 0;
+    will-change: opacity;
+}
+
+.dest-mapa-texto-p {
+    font-family: var(--font-body);
+    font-size: clamp(0.8rem, 0.95vw, 1rem);
+    color: var(--white);
+    line-height: 1.7;
+}
+
+/* Popup cursor del mapa */
+.dest-mapa-popup {
+    position: fixed;
+    background: rgba(15, 15, 15, 0.92);
+    border: 1px solid var(--mostaza);
+    padding: 0.5rem;
+    width: 180px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(14px, 14px);
+    transition: opacity 0.2s ease;
+    z-index: 9998;
+}
+
+.dest-mapa-popup-img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    display: block;
+}
+
+.dest-mapa-popup-label {
+    display: block;
+    font-family: var(--font-titles);
+    font-size: var(--text-xs);
+    color: var(--mostaza);
+    letter-spacing: 0.05em;
+    margin-top: 0.4rem;
+}
+
+.dest-mapa-popup.visible {
+    opacity: 1;
+}
+
+/* ── Tres fotos ──────────────────────────────── */
+.cap-section--destruccion-fotos {
+    background: var(--black);
+    overflow: hidden;
+}
+
+.dest-foto-item {
+    position: absolute;
+    width: 55%;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    clip-path: inset(0 100% 0 0);
+    will-change: clip-path, transform, width, height;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.dest-foto-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.dest-foto-recuadro {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    opacity: 0;
+    will-change: opacity;
+}
+
+.dest-foto-recuadro p {
+    font-family: var(--font-body);
+    font-size: clamp(0.9rem, 1vw, 1.1rem);
+    color: var(--white);
+    line-height: 1.75;
+    border: 1.5px solid var(--mostaza);
+    padding: 2rem 2.5rem;
+    background: rgba(15, 15, 15, 0.75);
+    max-width: 520px;
+}
+
+/* ── Final: dos imágenes + texto ────────────── */
+.cap-section--destruccion-final {
+    background: var(--black);
+    overflow: hidden;
+}
+
+.dest-final-img-row {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    gap: 0;
+}
+
+.dest-final-img {
+    flex: 1;
+    overflow: hidden;
+    opacity: 0;
+    will-change: opacity;
+}
+
+.dest-final-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.dest-final-texto {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    max-width: min(580px, 60vw);
+    background: rgba(15, 15, 15, 0.88);
+    border: 1.5px solid rgba(238, 222, 162, 0.3);
+    padding: 2.5rem 3rem;
+    opacity: 0;
+    will-change: opacity;
+}
+
+.dest-final-texto p {
+    font-family: var(--font-body);
+    font-size: clamp(0.85rem, 0.95vw, 1rem);
+    color: var(--white);
+    line-height: 1.75;
+}
+
+.dest-final-texto p+p {
+    margin-top: 1.25rem;
+}
+
+/* ── Iris cierre ─────────────────────────────── */
+.dest-iris-wrap {
+    position: fixed;
+    inset: 0;
+    z-index: 8500;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.dest-iris-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+
+/* ══════════════════════════════════════════════
+   VARIANTES OTRAS SECCIONES
+   ══════════════════════════════════════════════ */
+
+/* Leyenda + Resistencia */
+.cap-section--leyenda .cap-title-box,
+.cap-section--resistencia .cap-title-box {
+    background: var(--black);
+    border: 1.5px solid var(--mostaza);
+}
+
+.cap-section--leyenda .cap-title-box h2,
+.cap-section--resistencia .cap-title-box h2 {
+    color: var(--mostaza);
+}
+
+/* Destrucción */
+.cap-section--destruccion .cap-title-box {
+    background: var(--black);
+    border: 1.5px solid var(--cream);
+}
+
+.cap-section--destruccion .cap-title-box h2 {
+    color: var(--cream);
+}
+
+.cap-section--destruccion .cap-vline {
+    background: rgba(238, 222, 162, 0.35);
+}
+
+/* ══════════════════════════════════════════════
+   ANATOMÍA DEL BAR — CARRUSEL
+   ══════════════════════════════════════════════ */
+
+.anatomia-sticky-right {
+    flex-direction: column;
+    gap: 2rem;
+    padding: 3rem 10rem;
+}
+
+.bar-text {
+    position: relative;
+    border: 1px solid var(--cream);
+    padding: 2rem;
+    inset: 0;
+    z-index: 0;
+}
+
+.bar-text::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url('assets/textures/textura-02.png') repeat center / 400px 400px;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.bar-text p {
+    position: relative;
+    z-index: 0;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--white);
+}
+
+
+.anatomia-carousel {
+    position: relative;
+    width: 80%;
+
+}
+
+.anatomia-frame-wrap {
+    position: relative;
+}
+
+.anatomia-frame {
+    position: relative;
+    z-index: 1;
+    border: 1px solid rgba(241, 230, 150, 0.5);
+    box-shadow:
+        0 0 0 1px rgba(241, 230, 150, 0.08),
+        0 8px 32px rgba(0, 0, 0, 0.6),
+        0 2px 8px rgba(241, 230, 150, 0.1),
+        inset 0 0 40px rgba(0, 0, 0, 0.4);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.anatomia-frame::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url('assets/textures/textura-02.png') center / 250px repeat;
+    opacity: .12;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.anatomia-frame::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(
+            circle at center,
+            transparent 45%,
+            rgba(0,0,0,.45) 100%
+        );
+    pointer-events: none;
+    z-index: 9;
+}
+
+.anatomia-slides {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    overflow: hidden;
+    touch-action: pan-y;
+}
+
+.anatomia-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px) scale(0.98);
+    transition:
+        opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.anatomia-slide.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0) scale(1);
+}
+
+.anatomia-slide.exit-left {
+    opacity: 0;
+    transform: translateX(-40px) scale(0.98);
+}
+
+/* ── Imágenes del carrusel ────────────────── */
+.anatomia-img-wrap {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.anatomia-img--base {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.anatomia-img--select {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.anatomia-img--select.is-visible {
+    opacity: 1;
+}
+
+/* ── Hotspots SVG ─────────────────────────── */
+.anatomia-svg-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+}
+
+.anatomia-hotspot {
+    fill: transparent;
+    fill-opacity: 0;
+    stroke: none;
+    stroke-width: 0;
+    stroke-opacity: 0;
+    cursor: none;
+}
+
+.anatomia-hotspot:hover {
+    fill-opacity: 0;
+    stroke-opacity: 0;
+}
+
+.anatomia-hotspot.active {
+    fill-opacity: 0;
+    stroke-opacity: 0;
+}
+/* ── Navegación tipo rocola simple ───────────────── */
+
+.anatomia-nav {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.anatomia-rocola-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.anatomia-rocola-label {
+    display: none;
+}
+
+.anatomia-rocola-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.anatomia-rocola-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 2px solid #8f6a1d;
+    background: #c59b2a;
+
+    box-shadow:
+        inset 0 2px 6px rgba(255, 255, 255, .35),
+        inset 0 -3px 6px rgba(0, 0, 0, .25),
+        0 0 12px rgba(197, 155, 42, .5);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: none;
+    padding: 0;
+}
+
+.anatomia-rocola-btn-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.anatomia-rocola-btn svg {
+    width: 18px;
+    height: 18px;
+    color: #1b1b1b;
+}
+
+.anatomia-rocola-btn:hover {
+    background: #d8ae37;
+    transform: scale(1.08);
+    box-shadow:
+        0 0 12px rgba(197, 155, 42, .4);
+}
+
+.anatomia-rocola-btn:active {
+    transform: scale(.95);
+}
+
+.anatomia-rocola-counter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .2rem;
+    text-align: center;
+}
+
+#anatomia-label {
+    font-family: var(--font-titles);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--black);
+}
+
+#anatomia-counter {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    opacity: .6;
+}
+
+
+
+/* ── Popup cursor ─────────────────────────── */
+.anatomia-popup {
+    position: fixed;
+    background: rgba(15, 15, 15, 0.92);
+    padding: 0.7rem 1rem;
+    max-width: 220px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(14px, 14px);
+    transition: opacity 0.2s ease;
+    z-index: 9998;
+    backdrop-filter: blur(4px);
+}
+
+.anatomia-popup.visible {
+    opacity: 1;
+}
+
+.anatomia-popup-title {
+    display: block;
+    font-family: var(--font-titles);
+    font-size: var(--text-xs);
+    color: var(--mostaza);
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.anatomia-popup-desc {
+    font-family: var(--font-body);
+    font-size: var(--text-xs);
+    color: var(--cream);
+    line-height: 1.5;
+    margin: 0;
+    opacity: 0.85;
+}
+
+/* ══════════════════════════════════════════════
+   CAP 5 · RESISTENCIA
+   ══════════════════════════════════════════════ */
+
+/* ── Bloque 1: p1 grain ─────────────────────── */
+.cap-section--res-1 {
+    background: var(--black);
+}
+
+.res-grain-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: url('assets/textures/grain-resistencia.png') repeat center / 400px 400px;
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+.res-p1 {
+    font-family: var(--font-body);
+    font-size: clamp(3rem, 8vw, 7rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--white);
+    text-align: center;
+}
+
+/* ── Bloque 2: foto bg + textos posicionados ── */
+.cap-section--res-234 {
+    background: var(--black);
+    overflow: hidden;
+}
+
+.res-yadhiras-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.res-yadhiras-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.res-yadhiras-overlay {
+    position: absolute;
+    inset: 0;
+    filter: contrast();
+    z-index: 1;
+}
+
+/* Contenedores posicionados */
+.res-pos {
+    position: absolute;
+    z-index: 2;
+    max-width: 380px;
+    background: rgba(15, 15, 15, 0.82);
+    border: 1px solid rgba(238, 222, 162, 0.3);
+    padding: 1.5rem 2rem;
+    opacity: 0;
+    will-change: opacity, transform;
+}
+
+.res-pos p {
+    font-family: var(--font-body);
+    font-size: clamp(0.8rem, 0.9vw, 0.95rem);
+    color: var(--white);
+    line-height: 1.7;
+}
+
+.res-pos--tl {
+    top: 2rem;
+    left: 2rem;
+}
+
+.res-pos--r {
+    top: 50%;
+    right: 2rem;
+    transform: translateY(-50%);
+}
+
+.res-pos--b {
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* ── Bloque 3: foto centrada + recuadro p5 ──── */
+.cap-section--res-5 {
+    background: var(--black);
+}
+
+.res-foto-centrada {
+    position: relative;
+    width: clamp(300px, 55vw, 700px);
+    z-index: 2;
+}
+
+.res-foto-centrada img {
+    width: 100%;
+    display: block;
+    object-fit: cover;
+    border: 1px solid rgba(238, 222, 162, 0.3);
+}
+
+.res-5-recuadro {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    background: var(--black);
+    border: 1.5px solid var(--mostaza);
+    padding: 1.5rem 2rem;
+    opacity: 0;
+    will-change: opacity, transform;
+}
+
+.res-5-recuadro p {
+    font-family: var(--font-body);
+    font-size: clamp(0.85rem, 0.95vw, 1rem);
+    color: var(--white);
+    line-height: 1.7;
+}
+
+/* ── Bloque 4: SVG + p6 ─────────────────────── */
+.cap-section--res-6 {
+    background: var(--black);
+}
+
+.res-svg-wrap {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: scale(0);
+    transform-origin: center center;
+    will-change: transform;
+}
+
+.res-svg-img {
+    width: min(80vw, 700px);
+    height: auto;
+    opacity: 0.3;
+}
+
+.res-p6-overlay {
+    position: relative;
+    z-index: 2;
+    font-family: var(--font-body);
+    font-size: clamp(1.8rem, 4vw, 3.5rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--white);
+    text-align: center;
+    max-width: min(700px, 80vw);
+    opacity: 0;
+    will-change: opacity;
+}
+
+/* ── Bloque 5: columnas solapadas p7 ────────── */
+.cap-section--res-7 {
+    background: var(--black);
+    overflow: hidden;
+}
+
+.res-7-foto {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 62%;
+    height: 100%;
+    opacity: 0;
+    will-change: opacity;
+}
+
+.res-7-foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.res-7-texto {
+    position: absolute;
+    left: 2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    width: 48%;
+    background: rgba(15, 15, 15, 0.9);
+    border: 1.5px solid var(--mostaza);
+    padding: 2.5rem 3rem;
+    opacity: 0;
+    will-change: opacity, transform;
+}
+
+.res-7-texto p {
+    font-family: var(--font-body);
+    font-size: clamp(0.9rem, 1vw, 1.1rem);
+    color: var(--white);
+    line-height: 1.75;
+}
+
+/* Hover patrimonio */
+.res-patrimonio {
+    text-decoration: underline;
+    text-decoration-color: var(--mostaza);
+    text-underline-offset: 3px;
+    cursor: none;
+    color: var(--mostaza);
+}
+
+.res-patrimonio-popup {
+    position: fixed;
+    background: rgba(15, 15, 15, 0.95);
+    border: 1px solid var(--mostaza);
+    padding: 1rem 1.25rem;
+    max-width: 280px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(14px, 14px);
+    transition: opacity 0.2s ease;
+    z-index: 9998;
+}
+
+.res-patrimonio-popup p {
+    font-family: var(--font-body);
+    font-size: var(--text-xs);
+    color: var(--cream);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.res-patrimonio-popup.visible {
+    opacity: 1;
+}
+
+.res-910-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.res-910-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.res-link {
+    color: var(--mostaza);
+    text-decoration: underline;
+    text-decoration-color: rgba(241, 230, 150, 0.4);
+    text-underline-offset: 3px;
+    transition: text-decoration-color 0.2s ease;
+    cursor: pointer;
+}
+
+.res-link:hover {
+    text-decoration-color: var(--mostaza);
+}
+
+/* ── Bloque 7: imagen larga + cajas ─────────── */
+.cap-section--res-1113 {
+    background: var(--black);
+    overflow: hidden;
+}
+
+.res-img-larga-wrap {
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    height: 100svh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.res-img-larga {
+    position: relative;
+    width: clamp(500px, 100vw, 650px);
+    will-change: transform;
+}
+
+.res-img-larga img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+}
+
+/* Cajas sobre la imagen larga */
+.res-caja-larga {
+    position: absolute;
+    background: rgba(15, 15, 15, 0.88);
+    border: 1.5px solid var(--mostaza);
+    padding: 1.5rem 2rem;
+    max-width: 400px;
+    opacity: 0;
+}
+
+.res-caja-larga p {
+    font-family: var(--font-body);
+    font-size: clamp(0.8rem, 0.9vw, 0.95rem);
+    color: var(--white);
+    line-height: 1.7;
+}
+
+.res-caja-larga--tl {
+    top: 20%;
+    left: -120px;
+}
+
+.res-caja-larga--c {
+    top: 45%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.res-caja-larga--bl {
+    bottom: 8%;
+    left: -120px;
+}
+
+/* ── Bloque 8: video bg + p14 ───────────────── */
+.cap-section--res-14 {
+    background: var(--black);
+    overflow: hidden;
+}
+
+.res-video-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+.res-video-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 15, 15, 0.5);
+    z-index: 1;
+}
+
+.res-14-box {
+    position: relative;
+    z-index: 2;
+    background: rgba(15, 15, 15, 0.85);
+    border: 1.5px solid var(--mostaza);
+    padding: 2.5rem 3rem;
+    max-width: min(640px, 65vw);
+    opacity: 0;
+    will-change: opacity;
+}
+
+.res-14-box p {
+    font-family: var(--font-body);
+    font-size: clamp(0.95rem, 1.1vw, 1.15rem);
+    color: var(--white);
+    line-height: 1.75;
+}
+
+/* ── Bloque 9: p15 + fotos + Tijuana ────────── */
+.cap-section--res-15 {
+    background: var(--black);
+    overflow: hidden;
+}
+
+.res-15-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: url('assets/textures/grain-resistencia.png') repeat center / 400px 400px;
+    opacity: 0.12;
+    pointer-events: none;
+}
+
+/* Fotos alrededor */
+.res-15-foto {
+    position: absolute;
+    z-index: 1;
+    overflow: hidden;
+    opacity: 0;
+    will-change: opacity, transform;
+}
+
+.res-15-foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border: 1px solid rgba(238, 222, 162, 0.3);
+}
+
+/* Foto A: arriba izquierda */
+.res-15-foto--a {
+    width: clamp(180px, 20vw, 260px);
+    aspect-ratio: 4/3;
+    top: 8%;
+    left: 5%;
+}
+
+/* Foto B: derecha media */
+.res-15-foto--b {
+    width: clamp(160px, 18vw, 240px);
+    aspect-ratio: 3/4;
+    top: 30%;
+    right: 6%;
+}
+
+/* Foto C: abajo centro-izquierda */
+.res-15-foto--c {
+    width: clamp(180px, 20vw, 260px);
+    aspect-ratio: 4/3;
+    bottom: 8%;
+    left: 10%;
+}
+
+/* Texto p15 */
+.res-15-texto-wrap {
+    position: relative;
+    z-index: 2;
+    max-width: min(520px, 50vw);
+    text-align: center;
+    opacity: 0;
+    will-change: opacity;
+}
+
+.res-15-texto-wrap p {
+    font-family: var(--font-body);
+    font-size: clamp(0.95rem, 1.1vw, 1.15rem);
+    color: var(--white);
+    line-height: 1.8;
+}
+
+/* Tijuana final */
+.res-tijuana-final {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--black);
+    opacity: 0;
+    will-change: opacity;
+}
+
+.res-tijuana-final span {
+    font-family: var(--font-titles);
+    font-size: clamp(4rem, 12vw, 10rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: var(--white);
+    text-transform: uppercase;
+}
+
+/* ══════════════════════════════════════════════
+   FOOTER
+   ══════════════════════════════════════════════ */
+footer {
+    border-top: 1px solid rgba(244, 244, 244, 0.08);
+    padding: 4rem var(--pad-x);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4rem;
+}
+
+.footer-logo {
+    flex: 0 0 auto;
+    max-width: 20rem;
+    position: relative ;
+    z-index: 10;
+}
+
+.footer-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    text-align: right;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: var(--text-sm);
+    color: var(--white);
+    opacity: 0.65;
+    line-height: 1.5;
+}
