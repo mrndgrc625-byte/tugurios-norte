@@ -987,3 +987,18 @@ window.addEventListener('load', () => {
     setTimeout(() => ScrollTrigger.refresh(), 300);
 });
 
+function checkScreenSize() {
+    const minWidth = 1024; 
+    const overlay = document.getElementById('mobile-overlay');
+
+    if (window.innerWidth < minWidth) {
+        overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    } else {
+        overlay.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+checkScreenSize();
+window.addEventListener('resize', checkScreenSize);

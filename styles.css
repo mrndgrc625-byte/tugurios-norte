@@ -4515,5 +4515,38 @@ footer {
     display: block;
 }
 
+/* ══════════════════════════════════════════════
+   NO RESPOSIVE
+   ══════════════════════════════════════════════ */
+
+#mobile-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9;
+    background: #0f0f0f;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    font-family: 'Anton', sans-serif;
+}
+
+.mobile-overlay__content {
+    max-width: 320px;
+}
+
+.message-box {
+    padding-top: 1rem;
+}
+
+.mobile-overlay__message {
+    font-family: 'Playfair Display', serif;
+    padding: 0.4rem;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--white);
+    opacity: 0.85; }
+
 
 
