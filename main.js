@@ -235,111 +235,22 @@ function startReveal() {
 })();
 
 
-/* ─────────────────────────────────────────────
-   HELPER: crea un ScrollTrigger pinneando el
-   cap-pin-wrap completo (no la sección interior).
-   El cap-scroll-space ya está adentro del wrap,
-   así que pinSpacing: false evita espacio doble.
-───────────────────────────────────────────── */
+
 function makePinST(wrap, extraConfig = {}) {
     return {
         trigger: wrap,
         start: 'top top',
-        end: () => `+=${wrap.offsetHeight}`,   // usa la altura real (sección + scroll-space)
+        end: () => `+=${wrap.offsetHeight}`,  
         pin: wrap,
-        pinSpacing: false,   // el scroll-space YA está en el DOM dentro del wrap
+        pinSpacing: false,   
         ...extraConfig,
     };
 }
 
 
-/* ── 8. CAP 1 · 4 AMIGOS ────────────────────── */
+/* ── 8.  4 AMIGOS ────────────────────── */
 (function () {
-
-    /* ·· YOUTUBE MANAGER ························ */
-    function loadYTApi() {
-        if (window.YT || document.getElementById('yt-api-script')) return;
-        const tag = document.createElement('script');
-        tag.id = 'yt-api-script';
-        tag.src = 'https://www.youtube.com/iframe_api';
-        document.head.appendChild(tag);
-    }
-
-    // Extrae el ID de 11 caracteres de cualquier forma de URL de YouTube
-    function extractYTId(raw) {
-        if (!raw) return null;
-        // ya es un ID limpio (11 chars, sin slash ni punto)
-        if (/^[A-Za-z0-9_-]{11}$/.test(raw.trim())) return raw.trim();
-        // youtu.be/<ID>
-        const short = raw.match(/youtu\.be\/([A-Za-z0-9_-]{11})/);
-        if (short) return short[1];
-        // youtube.com/watch?v=<ID>  o  /embed/<ID>
-        const long = raw.match(/(?:v=|\/embed\/)([A-Za-z0-9_-]{11})/);
-        if (long) return long[1];
-        return null;
-    }
-
-    const YTManager = {
-        players: {},
-        timers: {},
-        CLIP_MS: 15000,
-
-        init(paragraphs) {
-            loadYTApi();
-            const container = document.getElementById('yt-players-amigos5');
-            if (!container) return;
-
-            paragraphs.forEach(p => {
-                const id = extractYTId(p.dataset.ytId);
-                if (!id || document.getElementById(`yt-player-${id}`)) return;
-                const div = document.createElement('div');
-                div.id = `yt-player-${id}`;
-                container.appendChild(div);
-                // guarda el ID limpio en el elemento para usarlo después
-                p.dataset.ytIdClean = id;
-            });
-
-            const prev = window.onYouTubeIframeAPIReady;
-            window.onYouTubeIframeAPIReady = () => { prev?.(); this._createPlayers(paragraphs); };
-            if (window.YT?.Player) this._createPlayers(paragraphs);
-        },
-
-        _createPlayers(paragraphs) {
-            paragraphs.forEach(p => {
-                const id = p.dataset.ytIdClean || extractYTId(p.dataset.ytId);
-                const start = parseInt(p.dataset.ytStart || '0', 10);
-                if (!id || this.players[id]) return;
-
-                this.players[id] = new YT.Player(`yt-player-${id}`, {
-                    videoId: id,
-                    playerVars: { autoplay: 0, controls: 0, disablekb: 1, fs: 0, iv_load_policy: 3, modestbranding: 1, rel: 0, start },
-                    events: { onReady: e => e.target.mute() },
-                });
-            });
-        },
-
-        play(id, startSec = 0) {
-            const p = this.players[id];
-            if (!p?.playVideo) return;
-            this.stop(id);
-            p.seekTo(startSec, true);
-            p.playVideo();
-            setTimeout(() => { try { p.unMute(); p.setVolume(70); } catch (_) { } }, 300);
-            this.timers[id] = setTimeout(() => this.stop(id), this.CLIP_MS);
-        },
-
-        stop(id) {
-            const p = this.players[id];
-            if (p?.pauseVideo) { p.pauseVideo(); try { p.mute(); } catch (_) { } }
-            clearTimeout(this.timers[id]);
-            delete this.timers[id];
-        },
-
-        stopAll() { Object.keys(this.players).forEach(id => this.stop(id)); },
-    };
-
-
-    /* ·· BLOQUE 2: grain con scrub ·············· */
+   
     const pinWrap2 = document.getElementById('pin-amigos-2');
     const párrafo2 = pinWrap2?.querySelector('.cap-p--fullbleed');
     const grain = document.getElementById('amigos-grain');
@@ -354,8 +265,6 @@ function makePinST(wrap, extraConfig = {}) {
             .to(párrafo2, { opacity: 0, yPercent: -5, ease: 'power2.in' }, 0.75);
     }
 
-
-    /* ·· BLOQUES 3 y 4: swap slides ············· */
     const pinWrap34 = document.getElementById('pin-amigos-34');
     if (!pinWrap34) return;
 
@@ -396,52 +305,6 @@ function makePinST(wrap, extraConfig = {}) {
         },
     });
 
-
-    /* ·· BLOQUE 5: párrafos + audio YouTube ····· */
-    const pinWrap5 = document.getElementById('pin-amigos-5');
-
-    if (pinWrap5) {
-        const paragraphs5 = [...pinWrap5.querySelectorAll('.cap-p--fullbleed[data-yt-id]')];
-
-        if (paragraphs5.length) {
-            YTManager.init(paragraphs5);
-            gsap.set(paragraphs5, { opacity: 0, yPercent: 6 });
-
-            let currentP5 = -1;
-
-            function activarParrafo5(index) {
-                if (index === currentP5) return;
-                if (currentP5 >= 0) {
-                    gsap.to(paragraphs5[currentP5], { opacity: 0, yPercent: -6, duration: 0.4, ease: 'power2.in' });
-                    YTManager.stop(paragraphs5[currentP5].dataset.ytIdClean || extractYTId(paragraphs5[currentP5].dataset.ytId));
-                }
-                currentP5 = index;
-                const p = paragraphs5[index];
-                const ytId = p.dataset.ytIdClean || extractYTId(p.dataset.ytId);
-                const ytStart = parseInt(p.dataset.ytStart || '0', 10);
-                gsap.fromTo(p, { opacity: 0, yPercent: 6 }, { opacity: 1, yPercent: 0, duration: 0.5, ease: 'power2.out' });
-                YTManager.play(ytId, ytStart);
-            }
-
-            ScrollTrigger.create({
-                ...makePinST(pinWrap5),
-                onUpdate(self) {
-                    activarParrafo5(Math.min(Math.floor(self.progress * paragraphs5.length), paragraphs5.length - 1));
-                },
-                onLeaveBack() {
-                    if (currentP5 >= 0) {
-                        gsap.to(paragraphs5[currentP5], { opacity: 0, duration: 0.3 });
-                        YTManager.stop(paragraphs5[currentP5].dataset.ytIdClean || extractYTId(paragraphs5[currentP5].dataset.ytId));
-                        currentP5 = -1;
-                    }
-                },
-                onLeave() { YTManager.stopAll(); },
-            });
-        }
-    }
-
-
-    /* ·· BLOQUE 6: cierre sobrio ················ */
     const pinWrap6 = document.getElementById('pin-amigos-6');
     if (!pinWrap6) return;
 
@@ -456,60 +319,40 @@ function makePinST(wrap, extraConfig = {}) {
 })();
 
 
-/* ── 9. ANATOMÍA · Carrusel ─────────────────── */
+/* ── 9. ANATOMÍA ─────────────── */
 (function () {
-    const slides = document.querySelectorAll('.anatomia-slide');
-    const labelEl = document.getElementById('anatomia-label');
-    const counterEl = document.getElementById('anatomia-counter');
     const popup = document.getElementById('anatomia-popup');
-    const slidesWrap = document.getElementById('anatomia-slides');
-    if (!slides.length || !popup) return;
-
-    const total = slides.length;
-    const labels = ['La Caguama · El Vasito', 'La Rocola', 'La Barra'];
-    let current = 0, isAnim = false;
-
-    function goTo(index, dir = 1) {
-        if (isAnim || index === current) return;
-        isAnim = true;
-        const prev = current;
-        current = ((index % total) + total) % total;
-        slides[prev].classList.add(dir > 0 ? 'exit-left' : 'exit-right');
-        slides[prev].classList.remove('active');
-        Object.assign(slides[current].style, { transform: `translateX(${dir > 0 ? '40px' : '-40px'}) scale(0.98)`, opacity: '0' });
-        slides[current].classList.add('active');
-        requestAnimationFrame(() => requestAnimationFrame(() => { slides[current].style.transform = ''; slides[current].style.opacity = ''; }));
-        setTimeout(() => { slides[prev].classList.remove('exit-left', 'exit-right'); slides[prev].style.transform = slides[prev].style.opacity = ''; isAnim = false; }, 750);
-        if (counterEl) counterEl.textContent = `${String(current + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
-        if (labelEl) { labelEl.style.opacity = '0'; setTimeout(() => { labelEl.textContent = labels[current]; labelEl.style.opacity = '1'; }, 200); }
-    }
-
-    document.getElementById('anatomia-prev')?.addEventListener('click', () => goTo(current - 1, -1));
-    document.getElementById('anatomia-next')?.addEventListener('click', () => goTo(current + 1, 1));
-
-    let startX = 0, dragging = false;
-    slidesWrap.addEventListener('pointerdown', e => { startX = e.clientX; dragging = true; slidesWrap.setPointerCapture(e.pointerId); });
-    slidesWrap.addEventListener('pointerup', e => { if (!dragging) return; dragging = false; const dx = e.clientX - startX; if (Math.abs(dx) > 40) goTo(current + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1); });
-
-    let accum = 0;
-    slidesWrap.addEventListener('wheel', e => {
-        e.preventDefault(); accum += e.deltaX || e.deltaY;
-        if (Math.abs(accum) > 80) { goTo(current + (accum > 0 ? 1 : -1), accum > 0 ? 1 : -1); accum = 0; }
-    }, { passive: false });
+    if (!popup) return;
 
     const popupTitle = popup.querySelector('.anatomia-popup-title');
     const popupDesc = popup.querySelector('.anatomia-popup-desc');
+
     document.querySelectorAll('.anatomia-hotspot').forEach(hotspot => {
         hotspot.addEventListener('mouseenter', () => {
             const target = hotspot.dataset.target;
-            hotspot.closest('.anatomia-slide').querySelectorAll('.anatomia-img--select').forEach(img => img.classList.toggle('is-visible', img.dataset.hotspot === target));
+            const cuadrante = hotspot.closest('.anatomia-cuadrante');
+
+            // muestra el PNG BN del hotspot dentro de su cuadrante
+            cuadrante.querySelectorAll('.anatomia-img--select').forEach(img => {
+                img.classList.toggle('is-visible', img.dataset.hotspot === target);
+            });
+
             popupTitle.textContent = hotspot.dataset.label;
             popupDesc.textContent = hotspot.dataset.desc;
             popup.classList.add('visible');
         });
-        hotspot.addEventListener('mousemove', e => { popup.style.left = e.clientX + 'px'; popup.style.top = e.clientY + 'px'; });
-        hotspot.addEventListener('mouseleave', () => { hotspot.closest('.anatomia-slide').querySelectorAll('.anatomia-img--select').forEach(img => img.classList.remove('is-visible')); popup.classList.remove('visible'); });
-        hotspot.addEventListener('click', () => { document.querySelectorAll('.anatomia-hotspot').forEach(h => h.classList.remove('active')); hotspot.classList.add('active'); });
+
+        hotspot.addEventListener('mousemove', e => {
+            popup.style.left = e.clientX + 'px';
+            popup.style.top = e.clientY + 'px';
+        });
+
+        hotspot.addEventListener('mouseleave', () => {
+            hotspot.closest('.anatomia-cuadrante')
+                .querySelectorAll('.anatomia-img--select')
+                .forEach(img => img.classList.remove('is-visible'));
+            popup.classList.remove('visible');
+        });
     });
 })();
 
@@ -520,7 +363,9 @@ function makePinST(wrap, extraConfig = {}) {
     const pinIntro = document.getElementById('pin-leyenda-intro');
     const titleEl = document.getElementById('leyenda-intro-title');
     if (pinIntro && titleEl) {
+        gsap.set(titleEl, { opacity: 0, yPercent: 30 });
         gsap.timeline({ scrollTrigger: makePinST(pinIntro, { scrub: 1 }) })
+            .to(titleEl, { opacity: 1, yPercent: 0, ease: 'power3.out' }, 0)
             .to(titleEl, { scale: 0.35, opacity: 0, ease: 'power2.in' }, 0.3);
     }
 
@@ -536,7 +381,10 @@ function makePinST(wrap, extraConfig = {}) {
             .to(imgA, { opacity: 1, x: 0, ease: 'power2.out' }, 0)
             .to(imgB, { opacity: 1, x: 0, ease: 'power2.out' }, 0.2)
             .to(imgC, { opacity: 1, x: 0, ease: 'power2.out' }, 0.4)
-            .to(textoL1, { opacity: 1, y: 0, ease: 'power2.out' }, 0.6);
+            .to(textoL1, { opacity: 1, y: 0, ease: 'power2.out' }, 0.6)
+            // salidas
+            .to([imgA, imgB, imgC], { opacity: 0, x: 40, ease: 'power2.in' }, 0.78)
+            .to(textoL1, { opacity: 0, y: -20, ease: 'power2.in' }, 0.78);
     }
 
     const pinL2 = document.getElementById('pin-leyenda-2');
@@ -547,7 +395,10 @@ function makePinST(wrap, extraConfig = {}) {
         gsap.set(textoL2, { opacity: 0 });
         gsap.timeline({ scrollTrigger: makePinST(pinL2, { scrub: 1 }) })
             .to(svgEl, { scale: 1, ease: 'power3.out' }, 0)
-            .to(textoL2, { opacity: 1, ease: 'power2.out' }, 0.5);
+            .to(textoL2, { opacity: 1, ease: 'power2.out' }, 0.5)
+            // salidas
+            .to(svgEl, { scale: 0.8, opacity: 0, ease: 'power2.in' }, 0.78)
+            .to(textoL2, { opacity: 0, ease: 'power2.in' }, 0.78);
     }
 
     const pinL345 = document.getElementById('pin-leyenda-345');
@@ -559,9 +410,11 @@ function makePinST(wrap, extraConfig = {}) {
         gsap.timeline({ scrollTrigger: makePinST(pinL345, { scrub: 1 }) })
             .to(col3, { opacity: 1, y: 0, ease: 'power2.out' }, 0)
             .to(col4, { opacity: 1, y: 0, ease: 'power2.out' }, 0.3)
-            .to(col5, { opacity: 1, y: 0, ease: 'power2.out' }, 0.6);
+            .to(col5, { opacity: 1, y: 0, ease: 'power2.out' }, 0.6)
+            // salida conjunta
+            .to([col3, col4, col5], { opacity: 0, y: -20, ease: 'power2.in' }, 0.82);
     }
-
+    
     const pinL6 = document.getElementById('pin-leyenda-6');
     const box6 = document.getElementById('leyenda-6-box');
     if (pinL6 && box6) {
@@ -571,12 +424,19 @@ function makePinST(wrap, extraConfig = {}) {
             .to(box6, { opacity: 0, y: -20, ease: 'power2.in' }, 0.75);
     }
 
+    // bloque 7 — agrega la salida
     const pinL7 = document.getElementById('pin-leyenda-7');
     const box7 = document.getElementById('leyenda-7-box');
-    if (pinL7 && box7) {
-        gsap.set(box7, { opacity: 0 });
+    const img7 = pinL7?.querySelector('.leyenda-7-img-top');
+    if (pinL7 && box7 && img7) {
+        gsap.set(img7, { opacity: 0 });
+        gsap.set(box7, { opacity: 0, x: -40 });
+
         gsap.timeline({ scrollTrigger: makePinST(pinL7, { scrub: 1 }) })
-            .to(box7, { opacity: 1, ease: 'power2.out' }, 0.1);
+            .to(img7, { opacity: 1, ease: 'power2.out' }, 0)
+            .to(box7, { opacity: 1, x: 0, ease: 'power3.out' }, 0.15)
+            .to(box7, { opacity: 0, x: 40, ease: 'power2.in' }, 0.65)
+            .to(img7, { opacity: 0, ease: 'power2.in' }, 0.68);
     }
 
     const pinL8 = document.getElementById('pin-leyenda-8');
@@ -587,31 +447,82 @@ function makePinST(wrap, extraConfig = {}) {
         gsap.set(highlight, { backgroundColor: 'transparent', color: 'var(--white)' });
         gsap.timeline({ scrollTrigger: makePinST(pinL8, { scrub: 1 }) })
             .to(textoL8, { opacity: 1, y: 0, ease: 'power2.out' }, 0)
-            .to(highlight, { backgroundColor: 'var(--mostaza)', color: 'var(--black)', ease: 'none' }, 0.5);
+            .to(highlight, { backgroundColor: 'var(--mostaza)', color: 'var(--black)', ease: 'none' }, 0.2)
+            .to(textoL8, { opacity: 0, y: -20, ease: 'power2.in' }, 0.8); 
     }
+
 
     const pinFinal = document.getElementById('pin-leyenda-final');
     const finalImg = document.getElementById('leyenda-final-img');
+
     if (pinFinal && finalImg) {
-        gsap.set(finalImg, { clipPath: 'inset(100% 0 0 0)' });
-        gsap.timeline({ scrollTrigger: makePinST(pinFinal, { scrub: 1.2 }) })
-            .to(finalImg, { clipPath: 'inset(0% 0 0 0)', ease: 'none' });
+        const sectionFinal = pinFinal.querySelector('.cap-section--leyenda-final');
+        const spaceFinal = pinFinal.querySelector('.cap-scroll-space');
+        const totalScrollHeight = spaceFinal?.offsetHeight || window.innerHeight * 1.5;
+
+        gsap.set(finalImg, { opacity: 0, scale: 1.05 });
+
+        gsap.timeline({
+            scrollTrigger: {
+                trigger: pinFinal,
+                start: 'top top',
+                end: () => `+=${totalScrollHeight}`,
+                pin: sectionFinal,
+                pinSpacing: false,
+                scrub: 1.2,
+                invalidateOnRefresh: true,
+            }
+        })
+            .to(finalImg, { opacity: 1, scale: 1, ease: 'power2.out', duration: 0.3 }, 0)
+            .to(finalImg, { yPercent: -100, ease: 'power2.in', duration: 0.4 }, 0.6);
     }
 
 })();
 
 
-/* ── 12. CAP 3 · DESTRUCCIÓN ─────────────────── */
+/* ── 12. DESTRUCCIÓN ─────────────────── */
 (function () {
 
     const pinIntro = document.getElementById('pin-destruccion-intro');
     const p1 = pinIntro?.querySelector('.destruccion-p1');
     const p2 = pinIntro?.querySelector('.destruccion-p2');
-    if (pinIntro && p1 && p2) {
+    const sectionIntro = pinIntro?.querySelector('.cap-section--destruccion-intro');
+
+    if (pinIntro && p1 && p2 && sectionIntro) {
+
+        gsap.set(sectionIntro, { y: '100vh' });
         gsap.set([p1, p2], { opacity: 0, y: 20 });
-        gsap.timeline({ scrollTrigger: makePinST(pinIntro, { scrub: 1 }) })
+
+        // Animación de entrada
+        gsap.to(sectionIntro, {
+            y: 0,
+            ease: 'power2.out',
+            scrollTrigger: {
+                trigger: pinIntro,
+                start: 'top bottom',
+                end: 'top top',
+                scrub: 1.2,
+                invalidateOnRefresh: true,
+            }
+        });
+
+    
+        gsap.timeline({
+            scrollTrigger: {
+                trigger: pinIntro,
+                start: 'top top',
+                end: () => `+=${pinIntro.offsetHeight}`,
+                pin: sectionIntro,
+                pinSpacing: false,
+                anticipatePin: 1,
+                scrub: 1,
+                invalidateOnRefresh: true,
+            }
+        })
             .to(p1, { opacity: 1, y: 0, ease: 'power2.out' }, 0.1)
-            .to(p2, { opacity: 1, y: 0, ease: 'power2.out' }, 0.45);
+            .to(p2, { opacity: 1, y: 0, ease: 'power2.out' }, 0.45)
+            .to(p1, { opacity: 0, y: -20, ease: 'power2.in' }, 0.78)
+            .to(p2, { opacity: 0, y: -20, ease: 'power2.in' }, 0.82);
     }
 
     const pin34 = document.getElementById('pin-destruccion-34');
@@ -631,66 +542,152 @@ function makePinST(wrap, extraConfig = {}) {
     if (pin5 && dp5) {
         gsap.set(dp5, { opacity: 0, x: -30 });
         gsap.timeline({ scrollTrigger: makePinST(pin5, { scrub: 1 }) })
-            .to(dp5, { opacity: 1, x: 0, ease: 'power2.out' }, 0.1);
+            .to(dp5, { opacity: 1, x: 0, ease: 'power2.out' }, 0.1)
+            .to(dp5, { opacity: 0, x: -30, ease: 'power2.in' }, 0.8);
     }
+    
 
     const pin6 = document.getElementById('pin-destruccion-6');
     const dp6 = document.getElementById('dest-p6');
     if (pin6 && dp6) {
         gsap.set(dp6, { opacity: 0, x: 30 });
         gsap.timeline({ scrollTrigger: makePinST(pin6, { scrub: 1 }) })
-            .to(dp6, { opacity: 1, x: 0, ease: 'power2.out' }, 0.1);
+            .to(dp6, { opacity: 1, x: 0, ease: 'power2.out' }, 0.1)
+            .to(dp6, { opacity: 0, x: 30, ease: 'power2.in' }, 0.8);
     }
 
+    /* ── Mapa destruccion ── */
     const pinMapa = document.getElementById('pin-destruccion-mapa');
     const mapaWrap = document.getElementById('destruccion-mapa-wrap');
-    const puntos = [...document.querySelectorAll('.dest-punto')];
-    const mapaTexto = document.getElementById('dest-mapa-texto');
-    const mapaTextoP = mapaTexto?.querySelector('.dest-mapa-texto-p');
-    const popup = document.getElementById('dest-mapa-popup');
-    const popupImg = popup?.querySelector('.dest-mapa-popup-img');
-    const popupLabel = popup?.querySelector('.dest-mapa-popup-label');
+    const puntosLayer = document.getElementById('dest-puntos-layer');
+    const textoWrap = document.getElementById('dest-mapa-texto');
+    const textoP = document.getElementById('dest-mapa-texto-p');
 
-    if (pinMapa && mapaWrap && puntos.length) {
-        gsap.set(mapaWrap, { scale: 1 });
-        gsap.set(puntos, { opacity: 0 });
-        gsap.set(mapaTexto, { opacity: 0 });
+    if (pinMapa && mapaWrap) {
 
-        const zoomTargets = [
-            { scale: 1.8, xPct: -22, yPct: -38 },
-            { scale: 2.2, xPct: -30, yPct: -50 },
-            { scale: 2.5, xPct: -35, yPct: -60 },
-            { scale: 2.8, xPct: -50, yPct: -70 },
+        const pasos = [
+            {
+                scale: 1.5,
+                desc: "Ese mismo año el Cabildo aprobó la declaración de saturación de antros, bares, cantinas y expendios de venta de alcohol en la zona norte del primer cuadro de la ciudad, en la mera \"Revu\". La misma ciudad que llegó a ser el segundo municipio a nivel nacional con mayores ingresos por Centros Nocturnos, Bares, Cantinas y Similares."
+            },
+            {
+                scale: 2.0,
+                desc: "Con el estandarte de regular los comercios, mejorar las medidas de seguridad e higiene, llegaron las inspecciones sorpresa que llevaron a clausurar más de 60 bares en el 2025. Actualmente, para operar legalmente, el Ayuntamiento exige arcos detectores de metales en la entrada, cámaras de vigilancia (interior y exterior) y guardias de seguridad certificados."
+            },
+            {
+                scale: 2.3,
+                desc: "El pueblito no hubiera tenido oportunidad."
+            },
+            {
+                scale: 2.5,
+                desc: "No solo es la política local la que busca escapar de la leyenda negra. Con el alza del costo de vivienda al otro lado de la frontera, el sector inmobiliario encontró de nuevo a sus clientes favoritos con nuevos proyectos de condominios, oficinas y desarrollos mixtos."
+            },
         ];
-        let currentPunto = -1;
 
-        function activarPunto(index) {
-            if (index === currentPunto) return;
-            if (currentPunto >= 0) gsap.to(mapaTexto, { opacity: 0, duration: 0.3 });
-            currentPunto = index;
-            const punto = puntos[index];
-            const z = zoomTargets[index];
-            gsap.to(mapaWrap, { scale: z.scale, x: `${z.xPct}%`, y: `${z.yPct}%`, duration: 0.8, ease: 'power2.inOut' });
-            gsap.to(punto, { opacity: 1, duration: 0.4, ease: 'power2.out' });
-            if (mapaTextoP) mapaTextoP.textContent = punto.dataset.desc;
-            gsap.to(mapaTexto, { opacity: 1, duration: 0.4, ease: 'power2.out' });
-        }
+        const ZOOM_OUT_START = 0.65;
+        const FASE2_START = 0.82;
+
+        // Estado inicial limpio
+        gsap.set(mapaWrap, { scale: 1, opacity: 1 });
+        gsap.set(textoWrap, { opacity: 0 });
+        gsap.set(puntosLayer, { opacity: 0 });
+        puntosLayer.style.pointerEvents = 'none';
+        puntosLayer.style.visibility = 'visible';
+
+        let pasoActual = -1;
+        let fase = 0;
 
         ScrollTrigger.create({
             ...makePinST(pinMapa),
-            onUpdate(self) { activarPunto(Math.min(Math.floor(self.progress * puntos.length), puntos.length - 1)); },
-            onLeaveBack() {
-                gsap.to(mapaWrap, { scale: 1, x: 0, y: 0, duration: 0.6 });
-                gsap.to(mapaTexto, { opacity: 0, duration: 0.3 });
-                gsap.to(puntos, { opacity: 0, duration: 0.3 });
-                currentPunto = -1;
-            },
-        });
 
-        puntos.forEach(punto => {
-            punto.addEventListener('mouseenter', () => { if (!popup) return; popupImg.src = punto.dataset.img || ''; popupLabel.textContent = punto.dataset.label || ''; popup.classList.add('visible'); });
-            punto.addEventListener('mousemove', e => { popup.style.left = e.clientX + 'px'; popup.style.top = e.clientY + 'px'; });
-            punto.addEventListener('mouseleave', () => popup?.classList.remove('visible'));
+            onEnter() {
+                gsap.set(mapaWrap, { opacity: 1, scale: 1 });
+                gsap.set(puntosLayer, { opacity: 0 });
+                gsap.set(textoWrap, { opacity: 0 });
+                puntosLayer.style.pointerEvents = 'none';
+                puntosLayer.style.visibility = 'visible';
+                fase = 0;
+                pasoActual = -1;
+            },
+
+            onUpdate(self) {
+                const p = self.progress;
+
+                /* ── Fase 3: puntos interactivos ── */
+                if (p >= FASE2_START) {
+                    if (fase !== 3) {
+                        fase = 3;
+                        gsap.to(textoWrap, { opacity: 0, duration: 0.25 });
+                        gsap.to(puntosLayer, { opacity: 1, duration: 0.5, delay: 0.2 });
+                        puntosLayer.style.pointerEvents = 'all';
+                    }
+                    return;
+                }
+
+                /* ── Fase 2: zoom out ── */
+                if (p >= ZOOM_OUT_START) {
+                    if (fase !== 2) {
+                        fase = 2;
+                        puntosLayer.style.pointerEvents = 'none';
+                        gsap.to(puntosLayer, { opacity: 0, duration: 0.2 });
+                        gsap.to(textoWrap, { opacity: 0, duration: 0.3 });
+                        pasoActual = -1;
+                    }
+                    const progZoomOut = (p - ZOOM_OUT_START) / (FASE2_START - ZOOM_OUT_START);
+                    const scaleOut = gsap.utils.interpolate(2.5, 1.2, progZoomOut);
+                    gsap.set(mapaWrap, { scale: scaleOut });
+                    return;
+                }
+
+                if (fase !== 1) {
+                    fase = 1;
+                    gsap.set(mapaWrap, { opacity: 1 });
+                }
+
+                const progFase1 = p / ZOOM_OUT_START;
+                const idx = Math.min(
+                    Math.floor(progFase1 * pasos.length),
+                    pasos.length - 1
+                );
+                const paso = pasos[idx];
+
+                gsap.to(mapaWrap, {
+                    scale: paso.scale,
+                    duration: 0.5,
+                    ease: 'power2.out',
+                    overwrite: 'auto'
+                });
+
+                if (idx !== pasoActual && p > 0.03) {
+                    pasoActual = idx;
+                    gsap.to(textoWrap, {
+                        opacity: 0,
+                        duration: 0.2,
+                        onComplete: () => {
+                            if (textoP) textoP.textContent = paso.desc;
+                            gsap.to(textoWrap, { opacity: 1, duration: 0.35 });
+                        }
+                    });
+                }
+            },
+
+            onLeaveBack() {
+                gsap.to(mapaWrap, { scale: 1, opacity: 1, duration: 0.6, ease: 'power2.inOut' });
+                gsap.to(textoWrap, { opacity: 0, duration: 0.3 });
+                gsap.to(puntosLayer, { opacity: 0, duration: 0.3 });
+                puntosLayer.style.pointerEvents = 'none';
+                puntosLayer.style.visibility = 'visible'; 
+                pasoActual = -1;
+                fase = 0;
+            },
+
+            onLeave() {
+                gsap.to(textoWrap, { opacity: 0, duration: 0.2 });
+                gsap.to(puntosLayer, { opacity: 0, duration: 0.1 });
+                puntosLayer.style.pointerEvents = 'none';
+                fase = 0;
+                pasoActual = -1;
+            },
         });
     }
 
@@ -699,18 +696,46 @@ function makePinST(wrap, extraConfig = {}) {
     const foto2 = document.getElementById('dest-foto-2');
     const foto3 = document.getElementById('dest-foto-3');
     const recuadro = document.getElementById('dest-foto-recuadro');
+
     if (pinFotos && foto1 && foto2 && foto3) {
+        const sectionFotos = pinFotos.querySelector('.cap-section--destruccion-fotos');
+
         gsap.set([foto1, foto2, foto3], { clipPath: 'inset(0 100% 0 0)' });
         gsap.set(recuadro, { opacity: 0 });
-        gsap.timeline({ scrollTrigger: makePinST(pinFotos, { scrub: 1 }) })
-            .to(foto1, { clipPath: 'inset(0 0% 0 0)', duration: 0.20, ease: 'power2.out' }, 0)
-            .to(foto1, { clipPath: 'inset(0 0 0 100%)', duration: 0.15, ease: 'power2.in' }, 0.25)
-            .to(foto2, { clipPath: 'inset(0 0% 0 0)', duration: 0.20, ease: 'power2.out' }, 0.35)
-            .to({}, { duration: 0.1 }, 0.6)
-            .to(foto2, { clipPath: 'inset(0 0 0 100%)', duration: 0.15, ease: 'power2.in' }, 0.72)
-            .to(foto3, { clipPath: 'inset(0 0% 0 0)', duration: 0.20, ease: 'power2.out' }, 0.82)
-            .to(foto3, { width: '100vw', height: '100vh', top: '0', left: '0', transform: 'translate(0,0)', borderRadius: 0, duration: 0.25, ease: 'power3.inOut' }, 0.88)
-            .to(recuadro, { opacity: 1, duration: 0.15, ease: 'power2.out' }, 0.95);
+
+        gsap.timeline({
+            scrollTrigger: {
+                trigger: pinFotos,
+                start: 'top top',
+                end: '+=350%',
+                pin: sectionFotos,
+                pinSpacing: true,
+                scrub: 1,
+                anticipatePin: 1,
+            }
+        })
+            // foto1: entra → se va
+            .to(foto1, { clipPath: 'inset(0 0% 0 0)', duration: 0.12, ease: 'power2.out' }, 0.05)
+            .to(foto1, { clipPath: 'inset(0 0 0 100%)', duration: 0.10, ease: 'power2.in' }, 0.20)
+
+            // foto2: entra → se va
+            .to(foto2, { clipPath: 'inset(0 0% 0 0)', duration: 0.12, ease: 'power2.out' }, 0.28)
+            .to(foto2, { clipPath: 'inset(0 0 0 100%)', duration: 0.10, ease: 'power2.in' }, 0.43)
+
+            // foto3: entra, luego crece a pantalla completa SIN transform conflicts
+            .to(foto3, { clipPath: 'inset(0 0% 0 0)', duration: 0.12, ease: 'power2.out' }, 0.50)
+            .to(foto3, {
+                width: '100vw',
+                height: '100vh',
+                top: '0',
+                left: '0',
+                margin: '0',
+                duration: 0.14,
+                ease: 'power3.inOut'
+            }, 0.58)
+            .to(recuadro, { opacity: 1, duration: 0.08, ease: 'power2.out' }, 0.70)
+            .to(recuadro, { opacity: 0, duration: 0.06, ease: 'power2.in' }, 0.88)
+            .to(foto3, { opacity: 0, duration: 0.08, ease: 'power2.in' }, 0.93);
     }
 
     const pinFinal = document.getElementById('pin-destruccion-final');
@@ -718,27 +743,41 @@ function makePinST(wrap, extraConfig = {}) {
     const finalImgB = document.getElementById('dest-final-img-b');
     const finalTexto = document.getElementById('dest-final-texto');
     if (pinFinal && finalImgA && finalImgB && finalTexto) {
-        gsap.set([finalImgA, finalImgB, finalTexto], { opacity: 0 });
+        gsap.set(finalImgA, { opacity: 0, x: -60 });
+        gsap.set(finalImgB, { opacity: 0, x: 60 });
+        gsap.set(finalTexto, { opacity: 0, y: 30 });
         gsap.timeline({ scrollTrigger: makePinST(pinFinal, { scrub: 1 }) })
-            .to(finalImgA, { opacity: 1, ease: 'power2.out' }, 0)
-            .to(finalImgB, { opacity: 1, ease: 'power2.out' }, 0.1)
-            .to(finalTexto, { opacity: 1, ease: 'power2.out' }, 0.3)
+            .to(finalImgA, { opacity: 1, x: 0, ease: 'power3.out' }, 0)
+            .to(finalImgB, { opacity: 1, x: 0, ease: 'power3.out' }, 0.1)
+            .to(finalTexto, { opacity: 1, y: 0, ease: 'power2.out' }, 0.3)
             .to([finalImgA, finalImgB, finalTexto], { opacity: 0, ease: 'power2.in' }, 0.75);
     }
+    
 
 })();
 
 
-/* ── 13. CAP 5 · RESISTENCIA ────────────────── */
+/* ── 13. RESISTENCIA ────────────────── */
 (function () {
 
     const pinR1 = document.getElementById('pin-res-1');
     const rp1 = document.getElementById('res-p1');
+    const titulo1 = document.getElementById('res-1-titulo');
+
     if (pinR1 && rp1) {
         gsap.set(rp1, { opacity: 0, yPercent: 5 });
+        if (titulo1) gsap.set(titulo1, { opacity: 0, y: 20 });
+
         gsap.timeline({ scrollTrigger: makePinST(pinR1, { scrub: 1 }) })
-            .to(rp1, { opacity: 1, yPercent: 0, ease: 'power2.out' }, 0)
-            .to(rp1, { opacity: 0, yPercent: -5, ease: 'power2.in' }, 0.7);
+            // 1. título entra
+            .to(titulo1, { opacity: 1, y: 0, ease: 'power3.out' }, 0)
+            // 2. título se queda un momento
+            // 3. título sale
+            .to(titulo1, { opacity: 0, y: -20, ease: 'power2.in' }, 0.3)
+            // 4. párrafo entra después de que el título salió
+            .to(rp1, { opacity: 1, yPercent: 0, ease: 'power2.out' }, 0.45)
+            // 5. párrafo sale al final
+            .to(rp1, { opacity: 0, yPercent: -5, ease: 'power2.in' }, 0.78);
     }
 
     const pinR234 = document.getElementById('pin-res-234');
@@ -752,7 +791,10 @@ function makePinST(wrap, extraConfig = {}) {
         gsap.timeline({ scrollTrigger: makePinST(pinR234, { scrub: 1 }) })
             .to(rp2, { opacity: 1, x: 0, ease: 'power2.out' }, 0.1)
             .to(rp3, { opacity: 1, x: 0, ease: 'power2.out' }, 0.35)
-            .to(rp4, { opacity: 1, y: 0, ease: 'power2.out' }, 0.6);
+            .to(rp4, { opacity: 1, y: 0, ease: 'power2.out' }, 0.6)
+            .to(rp2, { opacity: 0, x: -30, ease: 'power2.in' }, 0.78)
+            .to(rp3, { opacity: 0, x: 30, ease: 'power2.in' }, 0.78)
+            .to(rp4, { opacity: 0, y: -20, ease: 'power2.in' }, 0.82);
     }
 
     const pinR5 = document.getElementById('pin-res-5');
@@ -760,7 +802,8 @@ function makePinST(wrap, extraConfig = {}) {
     if (pinR5 && rRec5) {
         gsap.set(rRec5, { opacity: 0, y: 20 });
         gsap.timeline({ scrollTrigger: makePinST(pinR5, { scrub: 1 }) })
-            .to(rRec5, { opacity: 1, y: 0, ease: 'power2.out' }, 0.2);
+            .to(rRec5, { opacity: 1, y: 0, ease: 'power2.out' }, 0.2)
+            .to(rRec5, { opacity: 0, y: -20, ease: 'power2.in' }, 0.8);
     }
 
     const pinR6 = document.getElementById('pin-res-6');
@@ -771,7 +814,9 @@ function makePinST(wrap, extraConfig = {}) {
         gsap.set(rp6, { opacity: 0 });
         gsap.timeline({ scrollTrigger: makePinST(pinR6, { scrub: 1 }) })
             .to(rSvg, { scale: 1, ease: 'power3.out' }, 0)
-            .to(rp6, { opacity: 1, ease: 'power2.out' }, 0.5);
+            .to(rp6, { opacity: 1, ease: 'power2.out' }, 0.5)
+            .to(rSvg, { scale: 0.8, opacity: 0, ease: 'power2.in' }, 0.78)
+            .to(rp6, { opacity: 0, ease: 'power2.in' }, 0.78);
     }
 
     const pinR7 = document.getElementById('pin-res-7');
@@ -785,8 +830,11 @@ function makePinST(wrap, extraConfig = {}) {
         gsap.set(rTxt7, { opacity: 0, x: -40 });
         gsap.timeline({ scrollTrigger: makePinST(pinR7, { scrub: 1 }) })
             .to(rFoto7, { opacity: 1, x: 0, ease: 'power2.out' }, 0)
-            .to(rTxt7, { opacity: 1, x: 0, ease: 'power2.out' }, 0.15);
+            .to(rTxt7, { opacity: 1, x: 0, ease: 'power2.out' }, 0.15)
+            .to(rFoto7, { opacity: 0, x: 40, ease: 'power2.in' }, 0.78)
+            .to(rTxt7, { opacity: 0, x: -40, ease: 'power2.in' }, 0.78);
     }
+
     if (rPatri && rPopup && rPopupP) {
         rPatri.addEventListener('mouseenter', () => { rPopupP.textContent = rPatri.dataset.def; rPopup.classList.add('visible'); });
         rPatri.addEventListener('mousemove', e => { rPopup.style.left = e.clientX + 'px'; rPopup.style.top = e.clientY + 'px'; });
@@ -810,22 +858,51 @@ function makePinST(wrap, extraConfig = {}) {
     const caja11 = document.getElementById('res-caja-11');
     const caja12 = document.getElementById('res-caja-12');
     const caja13 = document.getElementById('res-caja-13');
+
     if (pinR1113 && rImgL && caja11 && caja12 && caja13) {
-        gsap.set([caja11, caja12, caja13], { opacity: 0, x: -20 });
-        gsap.timeline({ scrollTrigger: makePinST(pinR1113, { scrub: 1 }) })
-            .to(rImgL, { y: '-40%', ease: 'none' }, 0)
-            .to(caja11, { opacity: 1, x: 0, ease: 'power2.out' }, 0.1)
-            .to(caja12, { opacity: 1, x: 0, ease: 'power2.out' }, 0.45)
-            .to(caja13, { opacity: 1, x: 0, ease: 'power2.out' }, 0.75);
+
+        gsap.set([caja11, caja12, caja13], { opacity: 0, x: -30 });
+
+        gsap.timeline({ scrollTrigger: makePinST(pinR1113, { scrub: 1.5 }) })
+            .to(rImgL, { y: '-2%', ease: 'none' }, 0)
+
+            .to(caja11, { opacity: 1, x: 0, ease: 'power2.out' }, 0.15)
+            .to(caja11, { opacity: 0, x: -30, ease: 'power2.in' }, 0.80)
+
+            .to(caja12, { opacity: 1, x: 0, ease: 'power2.out' }, 0.38)
+            .to(caja12, { opacity: 0, x: -30, ease: 'power2.in' }, 0.90)
+
+            .to(caja13, { opacity: 1, x: 0, ease: 'power2.out' }, 0.90)
+            .to(caja13, { opacity: 0, x: -30, ease: 'power2.in' }, 1.30)
+
+            .to(rImgL, { y: '-50%', ease: 'none' }, 0.82)
+            .to({}, { duration: 0.18 });   
     }
 
     const pinR14 = document.getElementById('pin-res-14');
     const rBox14 = document.getElementById('res-14-box');
     if (pinR14 && rBox14) {
-        gsap.set(rBox14, { opacity: 0, y: 20 });
-        gsap.timeline({ scrollTrigger: makePinST(pinR14, { scrub: 1 }) })
-            .to(rBox14, { opacity: 1, y: 0, ease: 'power2.out' }, 0.15)
-            .to(rBox14, { opacity: 0, y: -20, ease: 'power2.in' }, 0.75);
+        gsap.set(rBox14, { opacity: 0, y: 60, scale: 0.96 });
+
+        const section14 = pinR14.querySelector('.cap-section--res-14');
+        const space14 = pinR14.querySelector('.cap-scroll-space');
+        const totalHeight = (section14?.offsetHeight || window.innerHeight)
+            + (space14?.offsetHeight || 0);
+
+        gsap.timeline({
+            scrollTrigger: {
+                trigger: pinR14,
+                start: 'top top',
+                end: () => `+=${totalHeight}`,
+                pin: section14,
+                pinSpacing: false,
+                anticipatePin: 1,          
+                scrub: 1,
+                invalidateOnRefresh: true,
+            }
+        })
+            .to(rBox14, { opacity: 1, y: 0, scale: 1, ease: 'power3.out' }, 0.15)
+            .to(rBox14, { opacity: 0, y: -40, ease: 'power2.in' }, 0.75);
     }
 
     const pinR15 = document.getElementById('pin-res-15');
@@ -834,28 +911,61 @@ function makePinST(wrap, extraConfig = {}) {
     const rFotoC = document.getElementById('res-15-foto-c');
     const rTxt15 = document.getElementById('res-15-texto');
     const rTijuana = document.getElementById('res-tijuana-final');
-   
+
     if (pinR15 && rFotoA && rFotoB && rFotoC && rTxt15 && rTijuana) {
+
+        const section15 = pinR15.querySelector('.cap-section--res-15');
+        const space15 = pinR15.querySelector('.cap-scroll-space');
+        const totalHeight = (section15?.offsetHeight || window.innerHeight)
+            + (space15?.offsetHeight || 0);
+
         gsap.set(rFotoA, { opacity: 0, x: '-30vw', y: '-10vh' });
         gsap.set(rFotoB, { opacity: 0, x: '30vw', y: '5vh' });
         gsap.set(rFotoC, { opacity: 0, x: '-20vw', y: '20vh' });
-        gsap.set(rTxt15, { opacity: 0 });
-        gsap.set(rTijuana, { opacity: 0 });
+        gsap.set(rTxt15, { opacity: 0, y: 30 });
+        gsap.set(rTijuana, { opacity: 0, scale: 0.85 });
 
-        gsap.timeline({ scrollTrigger: makePinST(pinR15, { scrub: 1 }) })
+        gsap.timeline({
+            scrollTrigger: {
+                trigger: pinR15,
+                start: 'top top',
+                end: () => `+=${totalHeight}`,
+                pin: section15,
+                pinSpacing: false,
+                anticipatePin: 1,
+                scrub: 1,
+                invalidateOnRefresh: true,
+                
+                onLeave() {
+                    gsap.set(section15, { clearProps: 'all' });
+                    section15.style.display = 'none';
+                },
+                onEnterBack() {
+                    section15.style.display = '';
+                    gsap.set(rTijuana, { opacity: 0, scale: 0.85 });
+                },
+            }
+        })
             .to(rFotoA, { opacity: 1, x: 0, y: 0, ease: 'power3.out' }, 0)
             .to(rFotoB, { opacity: 1, x: 0, y: 0, ease: 'power3.out' }, 0.1)
             .to(rFotoC, { opacity: 1, x: 0, y: 0, ease: 'power3.out' }, 0.2)
-            .to(rTxt15, { opacity: 1, ease: 'power2.out' }, 0.3)
-            .to([rFotoA, rFotoB, rFotoC, rTxt15], { opacity: 0, ease: 'power2.in' }, 0.68)
-            .to(rTijuana, { opacity: 1, ease: 'power2.out' }, 0.8);
+            .to(rTxt15, { opacity: 1, y: 0, ease: 'power2.out' }, 0.3)
+            // fotos y texto salen
+            .to([rFotoA, rFotoB, rFotoC], { opacity: 0, ease: 'power2.in' }, 0.62)
+            .to(rTxt15, { opacity: 0, y: -20, ease: 'power2.in' }, 0.62)
+
+            .to(rTijuana, { opacity: 1, scale: 1, ease: 'power2.out' }, 0.72)
+            .to(rTijuana, { opacity: 0, ease: 'power2.in' }, 0.92);
     }
 
 })(); 
 
-
 /* ── BACK TO TOP ────────────────────────────── */
 document.getElementById('backToTop')?.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+window.addEventListener('load', () => {
+    setTimeout(() => ScrollTrigger.refresh(), 300);
 });
 
