@@ -487,13 +487,17 @@ function makePinST(wrap, extraConfig = {}) {
     const p1 = pinIntro?.querySelector('.destruccion-p1');
     const p2 = pinIntro?.querySelector('.destruccion-p2');
     const sectionIntro = pinIntro?.querySelector('.cap-section--destruccion-intro');
+    const titleBox = pinIntro?.querySelector('.cap-title-box--destruccion');
+    const imgLarga = pinIntro?.querySelector('.destruccion-img-larga');
 
     if (pinIntro && p1 && p2 && sectionIntro) {
 
         gsap.set(sectionIntro, { y: '100vh' });
         gsap.set([p1, p2], { opacity: 0, y: 20 });
+        gsap.set(titleBox, { clipPath: 'inset(0 0 100% 0)' });
+        gsap.set(imgLarga, { clipPath: 'inset(100% 0 0 0)' });
 
-        // Animación de entrada
+        // entrada de la sección desde abajo
         gsap.to(sectionIntro, {
             y: 0,
             ease: 'power2.out',
@@ -506,7 +510,6 @@ function makePinST(wrap, extraConfig = {}) {
             }
         });
 
-    
         gsap.timeline({
             scrollTrigger: {
                 trigger: pinIntro,
@@ -519,8 +522,14 @@ function makePinST(wrap, extraConfig = {}) {
                 invalidateOnRefresh: true,
             }
         })
-            .to(p1, { opacity: 1, y: 0, ease: 'power2.out' }, 0.1)
-            .to(p2, { opacity: 1, y: 0, ease: 'power2.out' }, 0.45)
+            // título se abre de arriba a abajo
+            .to(titleBox, { clipPath: 'inset(0 0 0% 0)', ease: 'power2.out' }, 0)
+            // imagen se abre de abajo a arriba
+            .to(imgLarga, { clipPath: 'inset(0% 0 0 0)', ease: 'power2.out' }, 0.1)
+            // párrafos entran después
+            .to(p1, { opacity: 1, y: 0, ease: 'power2.out' }, 0.35)
+            .to(p2, { opacity: 1, y: 0, ease: 'power2.out' }, 0.55)
+            // salidas
             .to(p1, { opacity: 0, y: -20, ease: 'power2.in' }, 0.78)
             .to(p2, { opacity: 0, y: -20, ease: 'power2.in' }, 0.82);
     }
@@ -818,6 +827,15 @@ function makePinST(wrap, extraConfig = {}) {
             .to(rSvg, { scale: 0.8, opacity: 0, ease: 'power2.in' }, 0.78)
             .to(rp6, { opacity: 0, ease: 'power2.in' }, 0.78);
     }
+
+    gsap.to('#pow-shape', {
+        rotation: 8,
+        yoyo: true,
+        repeat: -1,
+        duration: 2.5,
+        ease: 'sine.inOut',
+        transformOrigin: '50% 50%'
+    });
 
     const pinR7 = document.getElementById('pin-res-7');
     const rFoto7 = document.getElementById('res-7-foto');
