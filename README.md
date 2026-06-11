@@ -2,6 +2,8 @@
 
 Narrativa digital sobre la extinción de los bares históricos de Tijuana.
 
+Optimizado para desktop. Se recomienda visualizar en pantalla completa.
+
 ## URL
 https://mrndgrc625-byte.github.io/tugurios-norte/
 
